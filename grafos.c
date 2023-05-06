@@ -4,13 +4,46 @@
 #include "matrix.h"
 #include "grafos.h"
 #include "lista_encadeada.h"
+#include "lista_encadeada_ponteiros.h"
 
 # define BRANCO 0;
 # define CINZA 1;
 # define PRETO 2;
 
+Grafo criar_o_grafo_vazio(Matrix m){
+    Grafo grafo;
+    grafo.n = m.data[0];
+    m.data[0] = 0;
+    grafo.M = &m;
+    int *arr1[grafo.n];
+    int *arr2[grafo.n];
+    int *arr3[grafo.n];
 
-Matrix leitura(){
+    for(int i=0; i<grafo.n; i++){
+        arr1[i]=NULL;
+        arr2[i]=-1;
+        arr3[i]=BRANCO;
+    }
+
+    int valor;
+    lista_ponteiro lipon = criacao_da_lista_ponteiro_vazia();
+    
+    for(int i=0; i<grafo.n; i++){
+        lista lisss = criacao_da_lista_vazia();
+        lisss = insere_fim_lista(lisss ,i);
+        lipon = insere_fim_lista_ponteiro(lipon ,lisss);
+    }
+
+    grafo.l = &lipon;
+    grafo.pai = arr1;
+    grafo.d = arr2;
+    grafo.cor = arr3;
+
+    return(grafo);
+}
+
+
+Grafo leitura(char *file_name){
     FILE *arq;
     char cara;
     int copia;
@@ -22,7 +55,7 @@ Matrix leitura(){
 
 
 
-    arq=fopen("pcv4.txt", "r");
+    arq=fopen(file_name, "r");
     if(!arq){
         printf("\n Nao abriu\n");
         return;
@@ -66,44 +99,10 @@ Matrix leitura(){
     }
     fclose(arq);
     Matrix mat = create_matrix(*data,tamanho_matriz,tamanho_matriz);
-    return(mat);
+    return(criar_o_grafo_vazio(mat));
 }
 
-Grafo criar_o_grafo_vazio(Matrix m){
-    Grafo grafo;
-    grafo.n = m.data[0];
-    m.data[0] = 0;
-    grafo.M = &m;
-    int* arr0 = (int*)malloc(grafo.n * sizeof(lista));
-    int *arr1[grafo.n];
-    int *arr2[grafo.n];
-    int *arr3[grafo.n];
 
-    for(int i=0; i<grafo.n; i++){
-        arr1[i]=NULL;
-        arr2[i]=-1;
-        arr3[i]=BRANCO;
-    }
-
-    int valor;
-    
-    for(int i=0; i<grafo.n; i++){
-        lista lisss = criacao_da_lista_vazia();
-        for(int j=0; j<grafo.n; j++){
-            valor = get_element(m, i, j);
-            if (valor != 0 )
-            lisss = insere_fim_lista(lisss ,j);
-        }
-        arr0[i] = lisss;
-    }
-
-    grafo.l = arr0;
-    grafo.pai = arr1;
-    grafo.d = arr2;
-    grafo.cor = arr3;
-
-    return(grafo);
-}
 
 int num_componentes_conexas(Grafo grafo){
     int n_comp = 0;
@@ -125,9 +124,8 @@ Grafo bfs(Grafo grafo, int source){
         int u = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(lis, 0, 0);
         lis = Retirar_um_elemento_em_uma_determinada_posicao(lis, 0);
         int contador = 1;
-        //parte confusa@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-        int v = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(grafo.l[u], contador , 0);
+        int v = Obter_o_valor_do_elemento_de_uma_determinada_ponteiro_na_lista_ponteiro(grafo.l, u, contador);
         while (v != -1){
             if(grafo.cor[v] == 0){
                 grafo.cor[v]= CINZA;
@@ -135,7 +133,7 @@ Grafo bfs(Grafo grafo, int source){
                 grafo.pai[v]  = u;
                 lis =insere_fim_lista(lis ,v);
                 contador++;
-                v = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(grafo.l[u], contador , 0);
+                v = Obter_o_valor_do_elemento_de_uma_determinada_ponteiro_na_lista_ponteiro(grafo.l, u, contador);
             }
         }
         grafo.cor[u]=PRETO;
@@ -159,7 +157,7 @@ Grafo dfs(Grafo grafo){
             while (Verificar_se_a_lista_esta_vazia(falsa_pilha) == 0){
                 int contador =1;
                 int valor = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(falsa_pilha, 0, 0);
-                int v = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(grafo.l[valor], contador , 0);
+                int v = Obter_o_valor_do_elemento_de_uma_determinada_ponteiro_na_lista_ponteiro(grafo.l, valor, contador);
                 while (v !=-1){
                     if(grafo.cor[v] == 0){
                         grafo.cor[v]= CINZA;
@@ -169,7 +167,7 @@ Grafo dfs(Grafo grafo){
                         break;
                     }
                     contador++;
-                    v = Obter_o_valor_do_elemento_de_uma_determinada_posicao_na_lista(grafo.l[u], contador , 0);
+                    v = Obter_o_valor_do_elemento_de_uma_determinada_ponteiro_na_lista_ponteiro(grafo.l, u, contador);
                 }
                 if (v==-1){
                     grafo.cor[valor]==PRETO;
